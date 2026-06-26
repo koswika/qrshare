@@ -10,6 +10,6 @@ A tool to share files over local Wi-Fi using QR codes.
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/qrshare.git
+git clone https://github.com/koswika/qrshare.git
 cd qrshare
 ./install.sh
