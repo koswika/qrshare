@@ -40,6 +40,24 @@ function parseArgs(): { files: string[]; port: number; timeout: number | null } 
 
 async function collectFiles(paths: string[]): Promise<FileItem[]> {
     const items: FileItem[] = [];
+    const usedNames = new Set<string>();
+
+    function addItem(name: string, fullPath: string, size: number) {
+        let finalName = name;
+        if (usedNames.has(finalName)) {
+            const ext = path.extname(name);
+            const base = ext ? name.slice(0, -ext.length) : name;
+            let counter = 2;
+            do {
+                finalName = `${base} (${counter})${ext}`;
+                counter++;
+            } while (usedNames.has(finalName));
+            console.error(chalk.yellow(`Note: renaming duplicate "${name}" to "${finalName}"`));
+        }
+        usedNames.add(finalName);
+        items.push({ name: finalName, path: fullPath, size });
+    }
+
     for (const p of paths) {
         const resolved = path.resolve(p);
         if (!fs.existsSync(resolved)) {
@@ -48,14 +66,14 @@ async function collectFiles(paths: string[]): Promise<FileItem[]> {
         }
         const stat = fs.statSync(resolved);
         if (stat.isFile()) {
-            items.push({ name: path.basename(resolved), path: resolved, size: stat.size });
+            addItem(path.basename(resolved), resolved, stat.size);
         } else if (stat.isDirectory()) {
             const dirFiles = fs.readdirSync(resolved);
             for (const file of dirFiles) {
                 const full = path.join(resolved, file);
                 const fstat = fs.statSync(full);
                 if (fstat.isFile()) {
-                    items.push({ name: file, path: full, size: fstat.size });
+                    addItem(file, full, fstat.size);
                 }
             }
         }
