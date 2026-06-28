@@ -67,10 +67,19 @@ export function startServer(options: ServerOptions): http.Server {
   return server;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function generateHtmlListing(files: FileItem[]): string {
   const rows = files.map(file => `
     <tr>
-      <td>📄 ${file.name}</td>
+      <td>📄 ${escapeHtml(file.name)}</td>
       <td>${formatBytes(file.size)}</td>
       <td><a href="/${encodeURIComponent(file.name)}">Download</a></td>
     </tr>
